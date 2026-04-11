@@ -9,9 +9,9 @@ Fill this in before the deadline and push it to your repo.
 | Team name | Zhai's Zoldierz     |
 | Member 1  | Fanhongmeng Zhai    |
 | Member 2  | Santiago Kupfer     |
-| Member 3  | Esteban X           |
+| Member 3  | Esteban Mulder           |
 | Member 4  | Matias Mejia        |
-| Member 5  | i forgot bro's name |
+| Member 5  | Sungjae Lee         |
 
 ---
 
@@ -31,9 +31,13 @@ _What does your project do, and why does it matter?_
 
 ## How to run the project
 
-1. Download the Bun runtime and package manager at https://bun.sh
-2. Download the `wasm-pack` tool at https://wasm-bindgen.github.io/wasm-pack/installer/
-3. tbd
+1. Make sure you have node.js installed; `brew install node` or through nvm
+2. Download the Bun runtime and package manager at https://bun.sh
+3. Download the `wasm-pack` tool at https://wasm-bindgen.github.io/wasm-pack/installer/
+4. Run from the project root `bun wasm:build`
+5. Run `bun run build`
+6. Run from the project root `cd .output && node server/index.mjs`
+7. Visit `http://[::]:3000` in your browser.
 
 ---
 

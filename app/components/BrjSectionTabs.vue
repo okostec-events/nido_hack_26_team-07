@@ -4,25 +4,58 @@ import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
-const tabs = [
-  { to: '/streets', label: 'Safe Streets', icon: '🗺️' },
-  { to: '/housing', label: 'Find Housing', icon: '🏡' },
-  { to: '/paperwork', label: 'Paperwork', icon: '📋' },
-  { to: '/food', label: 'Food', icon: '🍽️' },
-  { to: '/community', label: 'Community', icon: '🤝' },
-];
-
 const { user, isAuthenticated, hydrateSession, logout, loading } = useAuth();
+const { hasRoadmap, loadRoadmap } = useUserData();
+const isLoggingOut = ref(false);
+const roadmapPreloaded = ref(false);
 
-const isActive = (to: string) => route.path === to;
+const tabs = computed(() => {
+  const nextTabs = [{ to: '/roadmap', label: 'My Roadmap', icon: '🧭' }];
+
+  if (!isAuthenticated.value || (roadmapPreloaded.value && !hasRoadmap.value)) {
+    nextTabs.push({ to: '/onboarding', label: 'Onboarding', icon: '📝' });
+  }
+
+  nextTabs.push({ to: '/paperwork', label: 'Paperwork', icon: '📋' });
+
+  if (isAuthenticated.value) {
+    nextTabs.push({ to: '/housing', label: 'Housing', icon: '🏠' });
+  }
+
+  return nextTabs;
+});
+
+const isActive = (to: string) => {
+  if (to === '/roadmap') {
+    return route.path === '/roadmap' || route.path.startsWith('/roadmap/');
+  }
+
+  return route.path === to;
+};
 const showLogo = computed(() => route.path !== '/');
 
 onMounted(async () => {
   await hydrateSession();
+  if (isAuthenticated.value) {
+    try {
+      await loadRoadmap();
+    } catch {
+      // Ignore navbar roadmap preload errors.
+    } finally {
+      roadmapPreloaded.value = true;
+    }
+  } else {
+    roadmapPreloaded.value = true;
+  }
 });
 
 const logoutSession = async () => {
-  await logout();
+  isLoggingOut.value = true;
+  try {
+    await logout();
+  } finally {
+    isLoggingOut.value = false;
+  }
 };
 </script>
 
@@ -47,8 +80,15 @@ const logoutSession = async () => {
         <span class="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-700">Hi, {{ user?.name }}</span>
         <button
           class="rounded-full border border-stone-300 px-3 py-1 text-xs font-semibold text-stone-700 transition hover:border-stone-500 hover:text-stone-900 disabled:cursor-not-allowed disabled:opacity-60"
-          :disabled="loading" @click="logoutSession">
-          Log out
+          :disabled="loading || isLoggingOut" @click="logoutSession">
+          <span v-if="isLoggingOut" class="inline-flex items-center gap-1">
+            <svg class="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" class="opacity-25" stroke="currentColor" stroke-width="3" />
+              <path class="opacity-100" d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" />
+            </svg>
+            Logging out...
+          </span>
+          <span v-else>Log out</span>
         </button>
       </template>
       <template v-else>

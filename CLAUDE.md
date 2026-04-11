@@ -8,13 +8,12 @@ Student hackathon web app built at **Nido Hack '26**, Universidad del Desarrollo
 
 ## Tech Stack
 
-| Layer                     | Tool                                  |
-| ------------------------- | ------------------------------------- |
-| Runtime / Package Manager | Bun                                   |
-| Frontend Framework        | Nuxt.js (Vue 3, Composition API)      |
-| Frontend Styling          | Tailwind CSS v4                       |
-| Build Tool                | Vite                                  |
-| Systems / Performance     | Rust compiled to WASM via `wasm-pack` |
+| Layer                     | Tool                             |
+| ------------------------- | -------------------------------- |
+| Runtime / Package Manager | Bun                              |
+| Frontend Framework        | Nuxt.js (Vue 3, Composition API) |
+| Frontend Styling          | Tailwind CSS v4                  |
+| Build Tool                | Vite                             |
 
 ---
 
@@ -36,12 +35,6 @@ Student hackathon web app built at **Nido Hack '26**, Universidad del Desarrollo
 - Pages go in `pages/`, reusable UI in `components/`, business logic in `composables/`.
 - Fetch data in composables using `useFetch` or `useAsyncData` — not directly inside `<script setup>`.
 - Keep components presentational when possible; let composables own state and side effects.
-
-### Rust / WASM
-
-- WASM handles CPU-heavy work only (parsing, computation, encoding). Don't use it for DOM access or simple data transforms that JS handles fine.
-- Export only what the frontend needs — keep the WASM public API minimal.
-- After changing Rust code, rebuild with `wasm-pack build --target web` before testing.
 
 ---
 
@@ -71,9 +64,6 @@ Student hackathon web app built at **Nido Hack '26**, Universidad del Desarrollo
 bun install          # Install dependencies
 bun run dev          # Start dev server
 bun run build        # Production build
-
-# Rust / WASM
-wasm-pack build --target web   # Compile Rust to WASM
 ```
 
 > **After any change:** save the file, check the Vite HMR output in the terminal for errors, then verify in the browser. Commit early and often.

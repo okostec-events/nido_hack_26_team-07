@@ -1,10 +1,8 @@
 <script setup lang="ts">
 const links = [
-  { to: '/streets', label: 'Streets' },
-  { to: '/housing', label: 'Housing' },
+  { to: '/onboarding', label: 'Onboarding' },
+  { to: '/roadmap', label: 'Roadmap' },
   { to: '/paperwork', label: 'Paperwork' },
-  { to: '/food', label: 'Food' },
-  { to: '/community', label: 'Community' },
 ];
 </script>
 

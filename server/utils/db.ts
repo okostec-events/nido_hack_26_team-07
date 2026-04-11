@@ -136,6 +136,65 @@ const createSchema = async (): Promise<void> => {
   `;
 
   await db`
+    CREATE TABLE IF NOT EXISTS user_onboarding (
+      user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      country_of_origin TEXT NOT NULL,
+      immigration_status TEXT NOT NULL,
+      primary_goal TEXT NOT NULL,
+      timeline_weeks INTEGER NOT NULL CHECK (timeline_weeks > 0),
+      needs_housing BOOLEAN NOT NULL,
+      needs_paperwork BOOLEAN NOT NULL,
+      needs_bookings BOOLEAN NOT NULL,
+      profile_json TEXT NOT NULL DEFAULT '{}',
+      generation_meta_json TEXT NOT NULL DEFAULT '{}',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+
+  await db`
+    CREATE TABLE IF NOT EXISTS user_roadmap_steps (
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      step_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      category TEXT NOT NULL,
+      goal TEXT NOT NULL,
+      requirements_text TEXT NOT NULL,
+      explanation TEXT NOT NULL,
+      external_links_text TEXT NOT NULL,
+      dependency_ids_text TEXT NOT NULL,
+      warning_text TEXT,
+      step_data_json TEXT NOT NULL DEFAULT '{}',
+      step_order INTEGER NOT NULL,
+      status TEXT NOT NULL,
+      completed_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (user_id, step_id)
+    )
+  `;
+
+  await db`
+    ALTER TABLE user_onboarding
+    ADD COLUMN IF NOT EXISTS profile_json TEXT NOT NULL DEFAULT '{}'
+  `;
+
+  await db`
+    ALTER TABLE user_onboarding
+    ADD COLUMN IF NOT EXISTS generation_meta_json TEXT NOT NULL DEFAULT '{}'
+  `;
+
+  await db`
+    ALTER TABLE user_roadmap_steps
+    ADD COLUMN IF NOT EXISTS step_data_json TEXT NOT NULL DEFAULT '{}'
+  `;
+
+  await db`
+    ALTER TABLE user_onboarding
+    ADD COLUMN IF NOT EXISTS housing_json TEXT NOT NULL DEFAULT '{}'
+  `;
+
+  await db`
     CREATE INDEX IF NOT EXISTS auth_sessions_user_idx
     ON auth_sessions(user_id)
   `;
@@ -143,6 +202,16 @@ const createSchema = async (): Promise<void> => {
   await db`
     CREATE INDEX IF NOT EXISTS auth_sessions_expires_idx
     ON auth_sessions(expires_at)
+  `;
+
+  await db`
+    CREATE INDEX IF NOT EXISTS user_roadmap_steps_order_idx
+    ON user_roadmap_steps(user_id, step_order)
+  `;
+
+  await db`
+    CREATE INDEX IF NOT EXISTS user_roadmap_steps_status_idx
+    ON user_roadmap_steps(user_id, status)
   `;
 };
 

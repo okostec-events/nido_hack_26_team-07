@@ -83,6 +83,7 @@ export const useAuth = () => {
       });
       user.value = null;
       hydrated.value = true;
+      await navigateTo("/", { replace: true });
     } finally {
       loading.value = false;
     }

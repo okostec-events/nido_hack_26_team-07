@@ -12,7 +12,7 @@ const redirectPath = computed(() => {
   const redirect = route.query.redirect;
   return typeof redirect === "string" && redirect.startsWith("/")
     ? redirect
-    : "/paperwork";
+    : "/onboarding";
 });
 
 const resolveErrorMessage = (error: unknown): string => {
@@ -56,8 +56,8 @@ const submitRegister = async () => {
 
     <section class="mx-auto w-full max-w-2xl px-6 py-12 md:px-14">
       <p class="font-mono text-xs tracking-[0.14em] text-[#d52b1e] uppercase">Create account</p>
-      <h1 class="mt-3 font-serif text-5xl leading-tight font-bold text-stone-900">Save your first-30-days plan.</h1>
-      <p class="mt-4 text-stone-600">Track paperwork progress and housing favorites with one simple account.</p>
+      <h1 class="mt-3 font-serif text-5xl leading-tight font-bold text-stone-900">Create your execution account.</h1>
+      <p class="mt-4 text-stone-600">After sign up, we will build your personalized immigration roadmap.</p>
 
       <form class="mt-8 space-y-5 rounded border border-stone-200 bg-white p-6" @submit.prevent="submitRegister">
         <label class="block">
@@ -89,7 +89,14 @@ const submitRegister = async () => {
 
         <button type="submit" :disabled="loading"
           class="w-full rounded-sm bg-[#d52b1e] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#a82018] disabled:cursor-not-allowed disabled:opacity-60">
-          {{ loading ? 'Creating account...' : 'Create account' }}
+          <span v-if="loading" class="inline-flex items-center gap-2">
+            <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" class="opacity-25" stroke="currentColor" stroke-width="3" />
+              <path class="opacity-100" d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" />
+            </svg>
+            Creating account...
+          </span>
+          <span v-else>Create account</span>
         </button>
 
         <p class="text-sm text-stone-600">

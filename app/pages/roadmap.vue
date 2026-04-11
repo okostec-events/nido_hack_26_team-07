@@ -1,44 +1,35 @@
 <script setup lang="ts">
 import { useUserData } from "~/composables/useUserData";
 
-const PAPERWORK_CATEGORIES = new Set(["paperwork", "immigration"]);
-
 const { isAuthenticated, hydrateSession } = useAuth();
 const {
+  onboarding,
   roadmapSteps,
-  roadmapWarnings,
+  roadmapSummary,
   roadmapLoading,
   roadmapStepUpdatingIds,
   loadRoadmap,
-  loadRoadmapChecks,
   updateRoadmapStep,
 } = useUserData();
 
 const isStepUpdating = (stepId: string): boolean =>
   roadmapStepUpdatingIds.value.has(stepId);
 
-const paperworkSteps = computed(() =>
-  roadmapSteps.value
-    .filter((step) => PAPERWORK_CATEGORIES.has(step.category))
-    .sort((a, b) => a.order - b.order),
-);
+onMounted(async () => {
+  await hydrateSession();
+  if (!isAuthenticated.value) {
+    await navigateTo("/login?redirect=%2Froadmap");
+    return;
+  }
+  await loadRoadmap();
+});
 
-const warningMap = computed(
-  () => new Map(roadmapWarnings.value.map((warning) => [warning.stepId, warning])),
-);
-
-const completedCount = computed(
-  () => paperworkSteps.value.filter((step) => step.status === "completed").length,
-);
-
-const markComplete = async (stepId: string) => {
+const completeStep = async (stepId: string) => {
   await updateRoadmapStep(stepId, "completed");
-  await loadRoadmapChecks(stepId);
 };
 
 const reopenStep = async (stepId: string) => {
   await updateRoadmapStep(stepId, "pending");
-  await loadRoadmapChecks(stepId);
 };
 
 const statusClass = (status: string): string => {
@@ -53,17 +44,6 @@ const statusClass = (status: string): string => {
   }
   return "border-stone-300 bg-stone-100 text-stone-600";
 };
-
-onMounted(async () => {
-  await hydrateSession();
-  if (!isAuthenticated.value) {
-    await navigateTo("/login?redirect=%2Fpaperwork");
-    return;
-  }
-
-  await loadRoadmap();
-  await loadRoadmapChecks();
-});
 </script>
 
 <template>
@@ -71,18 +51,39 @@ onMounted(async () => {
     <BrjSectionTabs />
 
     <section class="mx-auto w-full max-w-6xl px-6 py-12 md:px-14">
-      <p class="font-mono text-xs tracking-[0.14em] text-[#d52b1e] uppercase">Roadmap paperwork workspace</p>
-      <h1 class="mt-3 font-serif text-5xl leading-tight font-bold text-stone-900">Paperwork tied to your roadmap.</h1>
-      <p class="mt-5 max-w-3xl text-stone-600">
-        This section now pulls your paperwork steps directly from your personalized roadmap so sequence and dependencies
-        stay aligned.
+      <p class="font-mono text-xs tracking-[0.14em] text-[#d52b1e] uppercase">Personalized roadmap</p>
+      <h1 class="mt-3 font-serif text-5xl leading-tight font-bold text-stone-900">Your execution plan for Chile.</h1>
+
+      <p class="mt-4 max-w-3xl text-stone-600">
+        Follow the sequence, complete dependencies, and avoid process errors before they happen.
       </p>
 
-      <div class="mt-7 rounded border border-stone-200 bg-white p-5">
-        <p class="font-mono text-xs tracking-[0.08em] text-stone-500 uppercase">Progress</p>
-        <p class="mt-2 text-sm text-stone-700">
-          Completed {{ completedCount }} of {{ paperworkSteps.length }} paperwork steps
-        </p>
+      <div class="mt-6 flex flex-wrap items-center gap-3 text-sm text-stone-600">
+        <template v-if="onboarding">
+          <span class="rounded bg-stone-100 px-3 py-1">Origin: {{ onboarding.countryOfOrigin }}</span>
+          <span class="rounded bg-stone-100 px-3 py-1">Status: {{ onboarding.immigrationStatus }}</span>
+          <span class="rounded bg-stone-100 px-3 py-1">Goal: {{ onboarding.primaryGoal }}</span>
+          <span class="rounded bg-stone-100 px-3 py-1">Timeline: {{ onboarding.timelineWeeks }} weeks</span>
+        </template>
+      </div>
+
+      <div class="mt-8 rounded border border-stone-200 bg-white p-5">
+        <template v-if="roadmapSummary">
+          <p class="font-mono text-xs tracking-[0.08em] text-stone-500 uppercase">Progress</p>
+          <p class="mt-2 text-sm text-stone-700">
+            Completed {{ roadmapSummary.completed }} of {{ roadmapSummary.total }} steps
+          </p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <NuxtLink to="/paperwork"
+              class="inline-block rounded border border-stone-300 px-3 py-1 text-xs font-semibold text-stone-700 transition hover:border-stone-500 hover:text-stone-900">
+              Open paperwork workspace
+            </NuxtLink>
+            <NuxtLink to="/onboarding?redo=1"
+              class="inline-block rounded border border-[#0032a0] px-3 py-1 text-xs font-semibold text-[#0032a0] transition hover:border-[#00257a] hover:text-[#00257a]">
+              Redo onboarding
+            </NuxtLink>
+          </div>
+        </template>
       </div>
 
       <div class="mt-8 space-y-4">
@@ -92,13 +93,13 @@ onMounted(async () => {
               <circle cx="12" cy="12" r="9" class="opacity-25" stroke="currentColor" stroke-width="3" />
               <path class="opacity-100" d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" />
             </svg>
-            <span>Loading paperwork flow...</span>
+            <span>Loading roadmap...</span>
           </div>
         </div>
 
-        <template v-else-if="paperworkSteps.length === 0">
+        <template v-else-if="roadmapSteps.length === 0">
           <div class="rounded border border-stone-200 bg-white p-6 text-stone-700">
-            <p>No paperwork steps found yet. Complete onboarding to generate your personalized flow.</p>
+            <p>No roadmap found yet. Start with onboarding to generate your personalized flow.</p>
             <NuxtLink to="/onboarding"
               class="mt-4 inline-block rounded-sm bg-[#0032a0] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#00257a]">
               Start onboarding
@@ -106,10 +107,10 @@ onMounted(async () => {
           </div>
         </template>
 
-        <article v-for="(step, index) in paperworkSteps" :key="step.id" class="rounded border border-stone-200 bg-white p-5">
+        <article v-for="step in roadmapSteps" :key="step.id" class="rounded border border-stone-200 bg-white p-5">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p class="font-mono text-[11px] tracking-[0.08em] text-stone-500 uppercase">Step {{ index + 1 }}</p>
+              <p class="font-mono text-[11px] tracking-[0.08em] text-stone-500 uppercase">Step {{ step.order }}</p>
               <h2 class="mt-1 text-lg font-semibold text-stone-900">{{ step.title }}</h2>
               <p class="mt-2 text-sm text-stone-600">{{ step.goal }}</p>
             </div>
@@ -118,28 +119,14 @@ onMounted(async () => {
             </span>
           </div>
 
-          <ul class="mt-4 space-y-2 text-sm text-stone-700">
-            <li v-for="requirement in step.requirements" :key="requirement" class="rounded bg-stone-50 px-3 py-2">
-              {{ requirement }}
-            </li>
-          </ul>
-
-          <div v-if="warningMap.get(step.id)"
-            class="mt-4 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-            <p v-if="warningMap.get(step.id)?.warning">{{ warningMap.get(step.id)?.warning }}</p>
-            <p v-if="(warningMap.get(step.id)?.missingDependencies.length ?? 0) > 0" class="mt-1">
-              Missing dependencies: {{ warningMap.get(step.id)?.missingDependencies.join(', ') }}
-            </p>
-          </div>
-
           <div class="mt-4 flex flex-wrap gap-2">
             <NuxtLink :to="`/roadmap/${step.id}`"
               class="rounded border border-stone-300 px-3 py-1 text-xs font-semibold text-stone-700 transition hover:border-stone-500 hover:text-stone-900">
-              Open full step detail
+              View details
             </NuxtLink>
             <button v-if="step.status !== 'completed'" :disabled="step.status === 'blocked' || isStepUpdating(step.id)"
               class="rounded-sm bg-[#d52b1e] px-3 py-1 text-xs font-semibold text-white transition hover:bg-[#a82018] disabled:cursor-not-allowed disabled:opacity-50"
-              @click="markComplete(step.id)">
+              @click="completeStep(step.id)">
               <span v-if="isStepUpdating(step.id)" class="inline-flex items-center gap-1">
                 <svg class="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <circle cx="12" cy="12" r="9" class="opacity-25" stroke="currentColor" stroke-width="3" />
@@ -162,6 +149,10 @@ onMounted(async () => {
               <span v-else>Reopen</span>
             </button>
           </div>
+
+          <p v-if="step.status === 'blocked'" class="mt-3 text-xs text-amber-700">
+            This step is blocked by unmet dependencies. Open details to see what is missing.
+          </p>
         </article>
       </div>
     </section>

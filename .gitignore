@@ -1,14 +1,24 @@
-# Dependencies
-node_modules/
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
 
-# Created automatically by npm install — do not commit
-unlocked.json
+# Node dependencies
+node_modules
 
-# Environment files — NEVER commit API keys
-.env.local
+# Logs
+logs
+*.log
 
-# macOS
+# Misc
 .DS_Store
+.fleet
+.idea
 
-# VS Code workspace settings (optional — remove this line if you want to share them)
-.vscode/settings.json
+# Local env files
+.env
+.env.*
+!.env.example

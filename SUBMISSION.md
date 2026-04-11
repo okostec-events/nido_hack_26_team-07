@@ -4,13 +4,14 @@ Fill this in before the deadline and push it to your repo.
 
 ## Team
 
-| Field     | Value |
-|-----------|-------|
-| Team name |       |
-| Member 1  |       |
-| Member 2  |       |
-| Member 3  |       |
-| Member 4  |       |
+| Field     | Value               |
+| --------- | ------------------- |
+| Team name | Zhai's Zoldierz     |
+| Member 1  | Fanhongmeng Zhai    |
+| Member 2  | Santiago Kupfer     |
+| Member 3  | Esteban X           |
+| Member 4  | Matias Mejia        |
+| Member 5  | i forgot bro's name |
 
 ---
 
@@ -30,9 +31,9 @@ _What does your project do, and why does it matter?_
 
 ## How to run the project
 
-1.
-2.
-3.
+1. Download the Bun runtime and package manager at https://bun.sh
+2. Download the `wasm-pack` tool at https://wasm-bindgen.github.io/wasm-pack/installer/
+3. tbd
 
 ---
 
